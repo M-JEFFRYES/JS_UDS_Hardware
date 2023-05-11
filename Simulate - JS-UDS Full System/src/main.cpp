@@ -7,10 +7,10 @@ float pdet;
 float vi;
 float vv;
 float q;
+float getRandomValue(float);
 void initValues();
 void updateValues();
 void printValues();
-
 
 void setup() {
   Serial.begin(9600);
@@ -21,6 +21,10 @@ void loop() {
   updateValues();
   printValues();
   delay(2);
+}
+
+float getRandomValue(float range){
+  return range * (rand() / (range + 1.0));
 }
 
 void initValues(){
@@ -35,12 +39,12 @@ void initValues(){
 
 void updateValues(){
   time = millis()/1000;
-  pblad = sin((time*10))*40;
-  pabd = sin((time*10)+15)*25;
-  pdet = sin((time*10)+30)*20;
-  vi = cos((time*10))*10;
-  vv = cos((time*10)+15)*42;
-  q = cos((time*10)+30)*46;
+  pblad = sin(time*10) * getRandomValue(35.0);
+  pabd = sin((time*10)+15) * getRandomValue(35.0);
+  pdet = sin((time*10)+30) * getRandomValue(35.0);
+  vi = cos(time*10) * getRandomValue(35.0);
+  vv = cos((time*10)+15) * getRandomValue(35.0);
+  q = cos((time*10)+30) * getRandomValue(35.0);
 }
 
 void printValues(){

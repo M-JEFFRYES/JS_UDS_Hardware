@@ -1,18 +1,35 @@
 #include <Arduino.h>
 
-// put function declarations here:
-int myFunction(int, int);
+float time;
+float vi;
+void initValues();
+void updateValues();
+void printValues();
+
 
 void setup() {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+  Serial.begin(9600);
+  initValues();
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  updateValues();
+  printValues();
+  delay(50);
 }
 
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
+void initValues(){
+  time = 0.0;
+  vi = 0.0;
+}
+
+void updateValues(){
+  time = millis()/1000;
+  vi = cos((time*10))*10;
+}
+
+void printValues(){
+  Serial.print(time);
+  Serial.print(",");
+  Serial.println(vi);
 }
