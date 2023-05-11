@@ -1,5 +1,5 @@
 # Urodynamics without borders hardware control
-This suite of hardware scripts provides a set of tools to perform validation testing on the urodynamics without borders hardware as well as perform clinical investigations. 
+This suite of hardware scripts provides a set of tools to perform validation testing on the urodynamics without borders hardware, simulate measurements to test the user interface software, and a script to perform clinical investigations. 
 
 ## Preparation
 - Visit the equipment guide on the [Urodynamics witout borders](https://urodynamicswithoutborders.com/system-design/) website. 
