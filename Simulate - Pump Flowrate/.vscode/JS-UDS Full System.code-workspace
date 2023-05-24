@@ -1,0 +1,44 @@
+{
+	"folders": [
+		{
+			"path": "../../JS-UDS Full System"
+		},
+		{
+			"name": "Test - Pressure",
+			"path": "../../Test - Pressure"
+		},
+		{
+			"name": "Test - Volume Infused",
+			"path": "../../Test - Volume Infused"
+		},
+		{
+			"name": "Test - Volume Void",
+			"path": "../../Test - Volume Void"
+		},
+		{
+			"name": "Test - Pump Flowrate",
+			"path": "../../Test - Pump Flowrate"
+		},
+		{
+			"name": "Simulate - Pressure",
+			"path": "../../Simulate - Pressure"
+		},
+		{
+			"name": "Simulate - Volume Void",
+			"path": "../../Simulate - Volume Void"
+		},
+		{
+			"name": "Simulate - Volume Infused",
+			"path": "../../Simulate - Volume Infused"
+		},
+		{
+			"name": "Simulate - Pump Flowrate",
+			"path": ".."
+		},
+		{
+			"name": "Simulate - JS-UDS Full System",
+			"path": "../../Simulate - JS-UDS Full System"
+		}
+	],
+	"settings": {}
+}
