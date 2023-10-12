@@ -12,6 +12,7 @@
 #define VI_DOUT  4
 #define VI_SCK  5
 #define PUMP_PIN 9
+const int PUMP_PWM_MAX = 256;
 
 const double PA_TO_CMH2O = 0.010197162129779282;
 const uint8_t ind1 = 0;
@@ -20,15 +21,7 @@ const int PSENS_DELAY = 50;
 MS5840 sensor1(ADDRESS_HIGH);
 MS5840 sensor2(ADDRESS_HIGH);
 
-const int BAUD_RATE = 9600;
-
-const int START_TRANSMISSION_CODE = 333;
-const int END_TRANSMISSION_CODE = 444;
-const int PUMP_PWM_MAX = 256;
-const unsigned int MAX_MESSAGE_LENGTH = 5;
-
 float millis_start;
-bool send_data;
 int pump_value;
 float time;
 double pblad;
@@ -39,69 +32,25 @@ float vi;
 HX711 loadcell_vi;
 HX711 loadcell_vv;
 
-void initValues();
-void updateValues();
-void printValues();
-void TCA9548A(uint8_t bus);
-double get_sensor_pressure(int MUX_index, MS5840 sensor);
-
-void setup() {
-  Serial.begin(BAUD_RATE);
-  initValues();
-
-  loadcell_vi.begin(VI_DOUT, VI_SCK);
-  loadcell_vi.set_scale(vi_calibration_factor); 
-
-  loadcell_vv.begin(VV_DOUT, VV_SCK);
-  loadcell_vv.set_scale(vv_calibration_factor); 
-
-  TCA9548A(ind1);
-  sensor1.reset();
-  sensor1.begin();
-
-  TCA9548A(ind2);
-  sensor2.reset();
-  sensor2.begin();
+// SENSOR MEASUREMENT
+void TCA9548A(uint8_t bus){
+  Wire.beginTransmission(0x70);  // TCA9548A address
+  Wire.write(1 << bus);          // send byte to select bus
+  Wire.endTransmission();
+  //Serial.print(bus);
 }
 
-void loop() {
-  while (Serial.available()>0){
-    static char message[MAX_MESSAGE_LENGTH];
-    static unsigned int message_pos=0;
-
-    char inByte = Serial.read();
-
-    if (inByte != '\n'){
-      message[message_pos] = inByte;
-      message_pos++;
-
-    } else {
-      message[message_pos] = '\0';
-      int number = atoi(message);
-
-      if (number == START_TRANSMISSION_CODE){
-        millis_start = millis();
-        send_data = true;
-      } else if (number == END_TRANSMISSION_CODE) {
-        send_data = false;
-      } else if (number < PUMP_PWM_MAX ) {
-        pump_value = number;
-        analogWrite(PUMP_PIN, pump_value);
-      }
-      message_pos = 0;
-    }
-  }
-
-  if (send_data){
-    updateValues();
-    printValues();
-  }
+double get_sensor_pressure(int MUX_index, MS5840 sensor){
+  TCA9548A(MUX_index); // Set multiplexer channel
+  double pressure_pa = sensor.getPressure(ADC_256); // get pressure in pascal
+  double pressure_h2o = pressure_pa * PA_TO_CMH2O; // convert to COM
+  return pressure_h2o;
 }
 
+// DATA MANAGEMENT
 void initValues(){
-  millis_start = 0;
+  millis_start = millis();
   pump_value = 0;
-  send_data = false;
   time = 0.0;
   pblad = 0.0;
   pabd = 0.0;
@@ -117,10 +66,9 @@ void updateValues() {
   delay(PSENS_DELAY);
   pabd = get_sensor_pressure(ind2, sensor2);
   delay(PSENS_DELAY);
-
 }
 
-void printValues() {
+void sendValues() {
   Serial.print("Time,");
   Serial.print(time);
   Serial.print(";PBLAD,");
@@ -133,16 +81,33 @@ void printValues() {
   Serial.println(vi);
 }
 
-void TCA9548A(uint8_t bus){
-  Wire.beginTransmission(0x70);  // TCA9548A address
-  Wire.write(1 << bus);          // send byte to select bus
-  Wire.endTransmission();
-  //Serial.print(bus);
+void setup() {
+  Serial.begin(manager.getBaudRate());
+
+  loadcell_vi.begin(VI_DOUT, VI_SCK);
+  loadcell_vi.set_scale(vi_calibration_factor); 
+
+  loadcell_vv.begin(VV_DOUT, VV_SCK);
+  loadcell_vv.set_scale(vv_calibration_factor); 
+
+  TCA9548A(ind1);
+  sensor1.reset();
+  sensor1.begin();
+
+  TCA9548A(ind2);
+  sensor2.reset();
+  sensor2.begin();
+
+  manager.loadInitDataFunction(initValues);
+  manager.loadCollectDataFunction(updateValues);
+  manager.loadSendDataFunction(sendValues);
+  manager.runInitDataFunction();
 }
 
-double get_sensor_pressure(int MUX_index, MS5840 sensor){
-  TCA9548A(MUX_index); // Set multiplexer channel
-  double pressure_pa = sensor.getPressure(ADC_256); // get pressure in pascal
-  double pressure_h2o = pressure_pa * PA_TO_CMH2O; // convert to COM
-  return pressure_h2o;
+void loop() {
+  while (Serial.available()>0){
+    manager.checkSerialMessagesIn();
+  }
+  manager.sendDataTransmission();
+  delay(2);
 }
